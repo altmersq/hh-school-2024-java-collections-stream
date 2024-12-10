@@ -2,10 +2,8 @@ package tasks;
 
 import common.Area;
 import common.Person;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 
 /*
 Имеются
@@ -19,6 +17,24 @@ public class Task6 {
   public static Set<String> getPersonDescriptions(Collection<Person> persons,
                                                   Map<Integer, Set<Integer>> personAreaIds,
                                                   Collection<Area> areas) {
-    return new HashSet<>();
+    Set<String> result = new HashSet<>();
+
+    Map<Integer, String> areaIdToName = new HashMap<>();
+    for (Area area : areas) {
+      areaIdToName.put(area.getId(), area.getName());
+    }
+
+    for (Person person : persons) {
+      Set<Integer> regionIds = personAreaIds.getOrDefault(person.id(), Collections.emptySet());
+
+      for (Integer regionId : regionIds) {
+        String regionName = areaIdToName.get(regionId);
+        if (regionName != null) {
+          result.add(person.firstName() + " - " + regionName);
+        }
+      }
+    }
+
+    return result;
   }
 }

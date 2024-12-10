@@ -1,14 +1,8 @@
 package tasks;
 
 import common.Person;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -21,21 +15,29 @@ P.P.S Здесь ваши правки необходимо прокоммент
  */
 public class Task9 {
 
-  private long count;
+//  private long count;   // Это не пригодится
 
-  // Костыль, эластик всегда выдает в топе "фальшивую персону".
-  // Конвертируем начиная со второй
+  // Убираем пустое поле с человеком, и возвращаем список
   public List<String> getNames(List<Person> persons) {
-    if (persons.size() == 0) {
+    // Проверка на пустой список
+    if (persons.isEmpty()) {
       return Collections.emptyList();
     }
-    persons.remove(0);
-    return persons.stream().map(Person::firstName).collect(Collectors.toList());
+    // Возвращаем новый список, пропуская первый элемент
+    return persons.stream()
+            .skip(1)
+            .map(Person::firstName)
+            .collect(Collectors.toList());
   }
 
   // Зачем-то нужны различные имена этих же персон (без учета фальшивой разумеется)
   public Set<String> getDifferentNames(List<Person> persons) {
-    return getNames(persons).stream().distinct().collect(Collectors.toSet());
+    // Не вызываем getNames, а напрямую возвращаем сет людей
+    return persons.stream()
+            .skip(1)
+            .map(Person::firstName)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
   }
 
   // Тут фронтовая логика, делаем за них работу - склеиваем ФИО
@@ -58,41 +60,41 @@ public class Task9 {
   // словарь id персоны -> ее имя
   public Map<Integer, String> getPersonNames(Collection<Person> persons) {
     Map<Integer, String> map = new HashMap<>(1);
-    for (Person person : persons) {
-      if (!map.containsKey(person.id())) {
-        map.put(person.id(), convertPersonToString(person));
-      }
-    }
-    return map;
+    // Напрямую возвращаем нужный словарь, без лишней проверки
+    return persons.stream()
+            .collect(Collectors.toMap(
+                    Person::id, // Ключ — id человека
+                    this::convertPersonToString, // Значение — строковое представление человека
+                    (existing, replacement) -> existing // Если ключ дублируется, оставляем первое значение
+            ));
   }
 
   // есть ли совпадающие в двух коллекциях персоны?
   public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
-    boolean has = false;
-    for (Person person1 : persons1) {
-      for (Person person2 : persons2) {
-        if (person1.equals(person2)) {
-          has = true;
-        }
-      }
-    }
-    return has;
+    // Преобразуем одну из коллекций в Set, чтобы быстро найти общие элементы
+    Set<Person> personSet = new HashSet<>(persons1);
+    // Проверяем, есть ли хотя бы один общий элемент
+    return persons2.stream().anyMatch(personSet::contains);
   }
 
   // Посчитать число четных чисел
   public long countEven(Stream<Integer> numbers) {
-    count = 0;
-    numbers.filter(num -> num % 2 == 0).forEach(num -> count++);
-    return count;
+    // Делаем гораздо проще и читабельнее
+    return numbers.filter(num -> num % 2 == 0).count();
   }
 
   // Загадка - объясните почему assert тут всегда верен
   // Пояснение в чем соль - мы перетасовали числа, обернули в HashSet, а toString() у него вернул их в сортированном порядке
   void listVsSet() {
+    // Создаем список с элементами от 1 до 10000
     List<Integer> integers = IntStream.rangeClosed(1, 10000).boxed().collect(Collectors.toList());
+    // Создаем копию этого списка (снимок)
     List<Integer> snapshot = new ArrayList<>(integers);
+    // Шаффлим изначальный список
     Collections.shuffle(integers);
+    // Создаем из этого перемешанного списка множество
     Set<Integer> set = new HashSet<>(integers);
+    // toString сортирует элементы в set при вызове, так уж он устроен внутри
     assert snapshot.toString().equals(set.toString());
   }
 }
