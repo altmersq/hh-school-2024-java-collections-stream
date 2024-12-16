@@ -24,19 +24,16 @@ public class Task1 {
   public List<Person> findOrderedPersons(List<Integer> personIds) {
     Set<Person> persons = personService.findPersons(personIds); // Получаем set Person из сервиса
 
-    Map<Integer, Integer> idToIndex = new HashMap<>();
-    for (int i = 0; i < personIds.size(); i++) {
-      idToIndex.put(personIds.get(i), i);
-    }
+    // делаем мапу id -> Person
+    Map<Integer, Person> idToPerson = persons.stream()
+            .collect(Collectors.toMap(Person::id, person -> person));
 
-    return persons.stream()
-            .sorted(Comparator.comparingInt(person -> idToIndex.get(person.id())))
+    return personIds.stream()
+            .map(idToPerson::get)
             .collect(Collectors.toList());
   }
 }
 
-// Получение данных из сервиса personSerivce - O(N), где N - количество объектов
-// Перебираем все элементы списка, и добавляем их в HashMap. У этой части сложность O(K), где K - длина списка personIds
-// При преобразовании в поток и сортировке, сложность O(NlogN).
-// Преобразование в список за O(K)
-// В итоге имеем O(N) + O(K) + O(NlogN) + O(K) = O(NlogN + K)
+// в таком случае O(N) будет, так как мы просто проходимся по N элементам, а получение ID имеет сложность O(1), так как
+// это взятие элемента из хэшмапы
+

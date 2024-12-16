@@ -4,6 +4,7 @@ import common.Area;
 import common.Person;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /*
 Имеются
@@ -17,24 +18,21 @@ public class Task6 {
   public static Set<String> getPersonDescriptions(Collection<Person> persons,
                                                   Map<Integer, Set<Integer>> personAreaIds,
                                                   Collection<Area> areas) {
-    Set<String> result = new HashSet<>();
+    Map<Integer, String> areaIdToName = areas.stream()
+            .collect(Collectors.toMap(Area::getId, Area::getName));
 
-    Map<Integer, String> areaIdToName = new HashMap<>();
-    for (Area area : areas) {
-      areaIdToName.put(area.getId(), area.getName());
-    }
+    // преобразуем каждую запись в сет через flatMap
+    return persons.stream()
+            .flatMap(person -> personAreaIds.getOrDefault(person.id(), Collections.emptySet())
+                    .stream()
+                    .map(areaId -> buildPersonDescription(person, areaIdToName.get(areaId)))
+            )
+            .collect(Collectors.toSet());
 
-    for (Person person : persons) {
-      Set<Integer> regionIds = personAreaIds.getOrDefault(person.id(), Collections.emptySet());
+  }
 
-      for (Integer regionId : regionIds) {
-        String regionName = areaIdToName.get(regionId);
-        if (regionName != null) {
-          result.add(person.firstName() + " - " + regionName);
-        }
-      }
-    }
-
-    return result;
+  // выносим метод склейки инфы о пользователе
+  private static String buildPersonDescription(Person person, String areaName) {
+    return person.firstName() + " - " + areaName;
   }
 }

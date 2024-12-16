@@ -19,10 +19,6 @@ public class Task9 {
 
   // Убираем пустое поле с человеком, и возвращаем список
   public List<String> getNames(List<Person> persons) {
-    // Проверка на пустой список
-    if (persons.isEmpty()) {
-      return Collections.emptyList();
-    }
     // Возвращаем новый список, пропуская первый элемент
     return persons.stream()
             .skip(1)
@@ -32,29 +28,16 @@ public class Task9 {
 
   // Зачем-то нужны различные имена этих же персон (без учета фальшивой разумеется)
   public Set<String> getDifferentNames(List<Person> persons) {
-    // Не вызываем getNames, а напрямую возвращаем сет людей
-    return persons.stream()
-            .skip(1)
-            .map(Person::firstName)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+    return new HashSet<>(getNames(persons));  // переиспользуем getNames, возвращая только уникальные записи
   }
 
   // Тут фронтовая логика, делаем за них работу - склеиваем ФИО
   public String convertPersonToString(Person person) {
-    String result = "";
-    if (person.secondName() != null) {
-      result += person.secondName();
-    }
-
-    if (person.firstName() != null) {
-      result += " " + person.firstName();
-    }
-
-    if (person.secondName() != null) {
-      result += " " + person.secondName();
-    }
-    return result;
+    // делаем лучше и красивее через string.join
+    return String.join(" ",
+            Optional.ofNullable(person.secondName()).orElse(""),  // если есть, то добавляем фамилию
+            Optional.ofNullable(person.firstName()).orElse("")  // если есть, то добавляем имя
+    ).trim(); // убиарем лишние пробелы, если чего-то не было
   }
 
   // словарь id персоны -> ее имя
@@ -98,3 +81,9 @@ public class Task9 {
     assert snapshot.toString().equals(set.toString());
   }
 }
+
+// Не совсем понял вопрос в первый раз. Почитал, и как я понял, причина в том, что
+// числа вставляются в HashSet на основе их хэш-кодов.
+// Для чисел хэш-код совпадает с их значением, и вставка происходит так,
+// что элементы упорядочиваются по возрастанию.
+// вот
