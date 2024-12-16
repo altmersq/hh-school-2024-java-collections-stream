@@ -1,9 +1,11 @@
 package tasks;
 
 import common.Person;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
 Задача 2
@@ -16,6 +18,9 @@ public class Task2 {
   public static List<Person> combineAndSortWithLimit(Collection<Person> persons1,
                                                      Collection<Person> persons2,
                                                      int limit) {
-    return new ArrayList<>();
+    return Stream.concat(persons1.stream(), persons2.stream()) // Объединяем коллекции через стримы
+            .sorted(Comparator.comparing(Person::createdAt)) // Сортируем по дате создания
+            .limit(limit) // Берем первые limit элементов
+            .collect(Collectors.toList()); // Сохраняем это все в список
   }
 }
